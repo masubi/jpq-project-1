@@ -1,7 +1,7 @@
 echo hi there:1:blank-file.txt:echo-out.txt
 echo wazzup:2 3:blank-file.txt:echo2-out.txt
-ls:4:echo-out.txt:cat-1.txt
-ls:4:echo2-out.txt:cat-2.txt
+cat:4:echo-out.txt:cat-1.txt
+cat:4:echo2-out.txt:cat-2.txt
 cat cat-1.txt cat-2.txt:none:blank-file.txt:sink.txt
 <!--============== FOOTER START ===========================-->
 
