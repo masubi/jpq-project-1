@@ -2,8 +2,8 @@
 * login: masuij(login used to submit)
 * Linux
 * date: 03/28/11
-* name: Justin Masui, full_name2 (for partner(s))
-* emails: masuij@seattleu.edu */
+* name: Justin Masui, Pichai Assawaruangchai, Quy Le
+* emails: veks11@gmail.com,assawaru@seattleu.edu,quyvle@gmail.com */
 
 #include <iostream>
 #include "graphexe.h"

@@ -10,11 +10,7 @@ graphexe : main.cpp graphexe.cpp graphexe.h
 	$(CC) $(LFLAGS) graphexe.cpp main.cpp -o graphexe
 	chmod 700 graphexe
 
-test: test.cpp
-	$(CC) $(LFLAGS) test.cpp -o test
-	chmod 700 test
-	
 clean:
 	rm -f graphexe
-	rm -f test
+	rm -f *.txt
 

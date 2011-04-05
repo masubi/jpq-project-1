@@ -1,0 +1,11 @@
+echo dummy 01:3:blank-file.txt:echo1-out.txt
+echo dummy 02:3:blank-file.txt:echo2-out.txt
+echo dummy 03:4 5:blank-file.txt:echo3-out.txt
+diff echo1-out.txt echo2-out.txt:5 6:blank-file.txt:diff1-out.txt
+cat:6 7:echo3-out.txt:cat-3.txt
+cat:8:echo1-out.txt:cat-1.txt
+cat:8:echo2-out.txt:cat-2.txt
+mv echo3-out.txt mv1-out.txt:8:blank-file.txt:mv1-out.txt
+ls:9:blank-file.txt:ls-output.txt 
+gzip -cvf:none:ls-output.txt:ls-output.txt.gz 
+echo A node without parent and child:none:blank-file.txt:echo4-out.txt
