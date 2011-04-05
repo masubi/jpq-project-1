@@ -1,0 +1,17 @@
+echo hi there:1:blank-file.txt:echo-out.txt
+echo wazzup:2 3:blank-file.txt:echo2-out.txt
+cat:4:echo-out.txt:cat-1.txt
+cat:4:echo2-out.txt:cat-2.txt
+cat cat-1.txt cat-2.txt:none:blank-file.txt:sink.txt
+<!--============== FOOTER START ===========================-->
+
+<TABLE cellSpacing=0 cellPadding=0 width=400 align=center border=0>
+  <TBODY>
+  <TR>
+    <TD align=middle><FONT class=text>This is a personal WEB site developed and maintained by an individual and not by Seattle University. The content and link(s) provided on this site do not represent or reflect the view(s) of Seattle University. The individual who authored this site is solely responsible for the site's content. This site and its author are subject to applicable University policies including the Computer Acceptable Use Policy <a href=http://www.seattleu.edu/policies>(www.seattleu.edu/policies)</a>.</FONT>&nbsp;</TD></TR>
+  <TR>
+    <TD height=20></TD>
+  </TR>
+  </TBODY>
+</TABLE>
+<!--============== FOOTER END =============================-->
