@@ -31,6 +31,7 @@ I think this gives an O(V+E) because populating the numParents is O(V+E).  Other
 #include <cstring>
 #include <map>
 #include <queue>
+#include <sys/wait.h>
 
 #include "graphexe.h"
 
@@ -123,42 +124,84 @@ main(int argc, char *argv[])
 		}
     }   
 	
-	//TODO:  Completely not done
 	/*------------------------
 	Main loop for executing jobs
 	------------------------*/
-	/*
+	//key=os pid, value=line number
+	map<pid_t,int> pidToNodeIDMap;
 	while((int)finishedq.size()!=numNodes){
+/*		while(!readyq.empty()){
+			//assume readyq not empty?
+			int r=readyq.top();
+			readyq.pop();
+			Node runningNode=allNodesMap[r];
+			pid_t p;
 
-		//assume readyq not empty?
-		int r=readyq.top();
-		readyq.pop();
-		Node runningNode=allNodesMap[r];
-		pid_t p;
+			p=fork();
+		
+			//error
+			if (p<0){
+				printf("Fork failed");
+			}
+		
+			//child
+			if(p==0) {
+				char programPlusArguments[1024];
+				char arg[1024];
+				char args_list[50][100];
+				strcpy(programPlusArguments, runningNode.prog);
+				char * tok = strtok(programPlusArguments, " ");
+				while (tok != NULL) {
+					cout << tok << endl;
+					tok = strtok(NULL, " ");
+				}
+				char *arg_list[64];	
+				execvp(arg_list[0], arg_list);
+			}
+		
+			//parent
+			if(p>0){
+				pidToNodeIDMap[p]=r;
+				cout<<"Forked NodeID "<<r<< " as pid "<<p<<endl;
+			}
+			
+		}//end of while(!readyq.empty())
+*/		
+		//wait for pid to finish
+		pid_t finishPid=wait(NULL);
+		int finishedNodeID=pidToNodeIDMap[finishPid];
 
-		//p=fork();
-		
-		//error
-		if (p<0){
-			printf("Fork failed");
+		//update numParents for each of the finishedNodeID's children
+		Node finishedNode=allNodesMap[finishedNodeID];
+		if(finishedNode.children[0]!=-99){
+			for(int i=0;i<(int)(finishedNode.children).size();i++){
+				int childToUpdate=finishedNode.children[i];
+
+				//update numParents for a given child
+				int remainingParents=numParents[childToUpdate];//key=node, value=number of remaining Parents
+				remainingParents--;
+				numParents[childToUpdate]=remainingParents;
+
+				//update readyq
+				if(remainingParents==0){
+					readyq.push(childToUpdate);
+					cout<<"adding "<<childToUpdate<<" to readyq"<<endl;
+				}
+			}
 		}
 		
-		//child
-		if(p==0) {
+		//update finishq
+		finishedq.push(finishedNodeID);
+		cout<<"adding "<<finishedNodeID<<" to finishedq"<<endl;
+
+		//update allNodesMap
+		Node updateNode=allNodesMap[finishedNodeID];
+		updateNode.status=FINISHED;
+		allNodesMap[finishedNodeID]=updateNode;
 		
-		//	execvp(arg_list[0], arg_list);
-		}
+	}//end of while((int)finishedq.size()!=numNodes)
 		
-		//parent
-		if(p>0){
-			//wait(&status);
-			//update allNodesMap
-			//update numParents
-				//add nodes with numParents[node.id]==0 to readyq
-		}
-	}
-	*/
-}
+}//end of main
 
 void addNodeToNumParents(Node node){
 
