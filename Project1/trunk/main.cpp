@@ -5,15 +5,16 @@
 * name: Justin Masui, full_name2 (for partner(s))
 * emails: masuij@seattleu.edu */
 
-/*  
+/*
 Basic idea is that each node's information is added ot the following maps
 
 name            key     value
+--------------- ---     --------------------
 allNodesMap     id      node
 parentToChild   id      vector<int> children
 numParents      id      numParents
- 
--  if numParents[id]=0, then the node is added to ready queue. 
+
+-  if numParents[id]=0, then the node is added to ready queue.
 -  when each node completes execution, for each element in allNodesMap[id].children the numParents[child] is decremented 1.  If this value is equal to 0 then move to ready queue.
 -  execute all jobs in ready queue, move running jobs to finishq
 -  repeat until all jobs in finishq
@@ -32,26 +33,27 @@ I think this gives an O(V+E) because populating the numParents is O(V+E).  Other
 #include <map>
 #include <queue>
 #include <sys/wait.h>
-
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "graphexe.h"
-#define BUFFER_SIZE 1024
+
+#define MAX_ARGUMENTS 10
 
 using namespace std;
 
 /*--------------------------
 Holds all nodes for easy acces
-key=Node->id, value=Node 
+key=Node->id, value=Node
 ----------------------------*/
-map<int, Node> allNodesMap; 
+map<int, Node> allNodesMap;
 
 /*--------------------------
 contains map of node to numberOfRemainingParents
 key=node, value=number of parents
 ----------------------------*/
-map<int,int> numParents; 
-
-//key=os pid, value=line number
-map<pid_t,int> pidToNodeIDMap;
+map<int,int> numParents;
 
 /*--------------------------
 queue
@@ -59,15 +61,12 @@ queue
 priority_queue<int> readyq;
 priority_queue<int> ineligibleq;
 queue<int> finishedq;
-queue<pid_t> runningq;
-queue<pid_t> checkq;
-
+queue<int> runningq;
 
 /*----------------------------
-populates the numParents 
+populates the numParents
 ----------------------------*/
 void addNodeToNumParents(Node node);
-void handleFinishedPid(pid_t finishedPid);
 
 int
 main(int argc, char *argv[])
@@ -83,7 +82,7 @@ main(int argc, char *argv[])
     //vars for parsing
     string line;
     int lineNum=-1;
-	int numNodes=0;
+	int numNodes;
 
 	Node rNode; //result node
 	//------------------------
@@ -97,28 +96,25 @@ main(int argc, char *argv[])
             cout<<"Line too long, ignoring..."<<line.length()<<endl;
             continue;
         }
-		
-        rNode=createNode(line,lineNum);//creates node from a line with id=lineNum    
+
+        rNode=createNode(line,lineNum);//creates node from a line with id=lineNum
 		if(rNode.id==-99) continue;  //if rNode is valid, skip current loop
-		
+
         //Contains all nodes key=id, value=node
         allNodesMap[lineNum]=rNode;
-		
-		//populate numParents     
+
+		//populate numParents
 		addNodeToNumParents(rNode);
-		
-		//increase numNodes
-		numNodes++;
-	}	
+	}
+	numNodes=lineNum+1;
 
     map<int, int>::const_iterator iter;
     cout<<"-----------------------"<<endl;
     cout<<"node numberParents"<<endl;
     for(iter=numParents.begin(); iter!= numParents.end(); ++iter){
         cout<<iter->first<<"    "<<(iter->second)<<endl;
-    }   
-	cout<<"Total Nodes Read="<<numNodes<<endl;
-	
+    }
+
     //iterate through nodes
 	//update to status
 	//add to readyq
@@ -132,165 +128,120 @@ main(int argc, char *argv[])
 			ineligibleq.push(iter->first);
 			cout<<"adding "<<iter->first<<" to ineligibleq"<<endl;
 		}
-    }   
-	
+    }
+
 	/*------------------------
 	Main loop for executing jobs
 	------------------------*/
-
-	while((int)finishedq.size()<numNodes){
-
-		while(!readyq.empty()){
-		
-			//assume readyq not empty?
-			int r=readyq.top();
+	//key=os pid, value=line number
+	map<pid_t,int> pidToNodeIDMap;
+	while((int)finishedq.size()!=numNodes){
+		while(!readyq.empty()) {
+			int r = readyq.top();
 			readyq.pop();
-			Node runningNode=allNodesMap[r];
+			Node runningNode = allNodesMap[r];
 
-			pid_t p;
+			pid_t p = fork();
 
-			p=fork();
-		
-			//error
-			if (p<0){
-				printf("Fork failed");
-			}
-		
-			//child
-			if(p==0) {
-				char *read_line=(char *)malloc(BUFFER_SIZE);
-				char *arg_list[BUFFER_SIZE];
-				int background;
-				
-				strncpy(read_line,runningNode.prog,BUFFER_SIZE);
-				
-				int cnt=0;
-				arg_list[cnt]=strtok(read_line," \r\n");
-				//parse into arg_list
-				while(arg_list[cnt]!=NULL)
-				 {
-				   //printf("parsed %s\n",arg_list[cnt]);
-				   arg_list[++cnt]=strtok(NULL," \r\n");
-				 }
-				//handle background functionality
-				if(arg_list[0]!=NULL && *arg_list[cnt-1]=='&'){
-					background=1;
-					arg_list[cnt-1]=NULL;
-				}else{
-					background=0;
+			// Child
+			if (p == 0) {
+				char * cmd[MAX_ARGUMENTS];
+				char programPlusArguments[1024*3];
+				strcpy(programPlusArguments, runningNode.prog);
+				char * tok = strtok(programPlusArguments, " ");
+				int i;
+				for(i = 0; tok != NULL && i < MAX_ARGUMENTS; i++) {
+					cmd[i] = tok;
+					tok = strtok(NULL, " ");
+ 				}
+
+				// replace last command with NULL if i = MAX_ARGUMENTS
+				if (i == MAX_ARGUMENTS) {
+					cmd[i-1] = NULL;
+				} else {
+					cmd[i] = NULL;
 				}
 
-				execvp(arg_list[0], arg_list);
-			}
-		
-			//parent
-			if(p>0){
-				pidToNodeIDMap[p]=r;
-				runningq.push(p);
-				cout<<"Forked NodeID "<<r<< " as pid "<<p<<endl;
-			}
-			
-		}//end of while(!readyq.empty())
-		
-		//wait for pid to finish
-		pid_t testPID;
-		//printf("Checking PID Status, runningq.size=%d\n",(int)runningq.size());
-		while(!runningq.empty()){
-			int status;
-			testPID=runningq.front();
-			//printf("checking pid=%d,runningq.size()=%d\n", testPID,(int)runningq.size());
+				int inputFile = open(runningNode.input, O_RDONLY | O_CREAT, 0644);
+				if (inputFile == -1) {
+					char errorMsg[1024];
+					createOpeningFileErrorMessage(errorMsg, "input", &runningNode);
+					exit(1);
+				}
 
-			pid_t statusPid=waitpid(testPID, &status, WNOHANG);
+				int dup2Code_stdin = dup2(inputFile, 0);
+				if (dup2Code_stdin == -1) {
+					perror("Unable to duplicate STDIN file descriptor");
+					// should we exit?
+				}
 
-			if(statusPid==0) {
-				//printf("status not available for pid=%d, continue\n", testPID);
-				//if status not available move pid to checkq
-				checkq.push(runningq.front());
-				runningq.pop();
-				continue;
-			}
-			
-			if(statusPid==-1) {
-				printf("signal delivered to pid=%d, Considering finished\n", testPID);
-				runningq.pop();//remove from runningq
-				handleFinishedPid(statusPid);
-				continue;
-			}
-			
-			//statusPid > 0
-			if (WIFEXITED(status)) {
-				printf("child exited, status=%d,pid=%d,Considering finished\n", WEXITSTATUS(status),testPID);
-				runningq.pop();//remove from runningq
-				handleFinishedPid(statusPid);
-				continue;
+				if (close(inputFile) == -1) {
+					perror("Error closing input file");
+				}
 
-			} else if (WIFSIGNALED(status)) {
-				printf("child killed (signal %d),pid=%d,Considering finished\n", WTERMSIG(status),testPID);
-				runningq.pop();//remove from runningq
-				handleFinishedPid(statusPid);
+				int outputFile = open(runningNode.output, O_WRONLY | O_CREAT, 0644);
+				if (outputFile == -1) {
+					char errorMsg[1024];
+					createOpeningFileErrorMessage(errorMsg, "output", &runningNode);
+					exit(1);
+				}
 
-			} else if (WIFSTOPPED(status)) {
-				printf("child stopped (signal %d),pid=%d,Considering finished\n", WSTOPSIG(status),testPID);
-				runningq.pop();//remove from runningq
-				handleFinishedPid(statusPid);
-				
-			} else if (WEXITSTATUS(status)) {
-				printf("child , status=%d,pid=%d,Considering finished\n", WEXITSTATUS(status),testPID);
-				runningq.pop();//remove from runningq
-				handleFinishedPid(statusPid);			
+
+				int dup2Code_stdout = dup2(outputFile, 1);
+				if (dup2Code_stdout == -1) {
+					perror("Unable to duplicate STDOUT file descriptor");
+					// should we exit?
+				}
+				if (close(outputFile) == -1) {
+					perror("Error closing output file");
+				}
+
+				execvp(cmd[0], cmd);
+			// Parent
+			} else if (p > 0) {
+				// update pid to node map
+				pidToNodeIDMap[p] = r;
 			} else {
-				printf("unhandled status=%d,pid=%d,Considering finished\n",status,testPID);
+				perror("Fork failed.");
+				// what to do in this case?
 			}
-			//TODO:  handle if process doesn't terminate
-		}   
-		
-		//copy checkq back to runningq
-		//printf("copying checkq(%d) to runningq(%d)\n",(int)checkq.size(),(int)runningq.size());
-		while(!checkq.empty()){
-			pid_t tmp=checkq.front();
-			runningq.push(tmp);
-			//printf("copy pid %d\n", checkq.front());
-			checkq.pop();
 		}
 
+		//wait for pid to finish
+		pid_t finishPid=wait(NULL);
+		int finishedNodeID=pidToNodeIDMap[finishPid];
 
-		
+		//update numParents for each of the finishedNodeID's children
+		Node finishedNode=allNodesMap[finishedNodeID];
+		if(finishedNode.children[0]!=-99){
+			for(int i=0;i<(int)(finishedNode.children).size();i++){
+				int childToUpdate=finishedNode.children[i];
+
+				//update numParents for a given child
+				int remainingParents=numParents[childToUpdate];//key=node, value=number of remaining Parents
+				remainingParents--;
+				numParents[childToUpdate]=remainingParents;
+
+				//update readyq
+				if(remainingParents==0){
+					readyq.push(childToUpdate);
+					//cout<<"adding "<<childToUpdate<<" to readyq"<<endl;
+				}
+			}
+		}
+
+		//update finishq
+		finishedq.push(finishedNodeID);
+		//cout<<"adding "<<finishedNodeID<<" to finishedq"<<endl;
+
+		//update allNodesMap
+		Node updateNode=allNodesMap[finishedNodeID];
+		updateNode.status=FINISHED;
+		allNodesMap[finishedNodeID]=updateNode;
+
 	}//end of while((int)finishedq.size()!=numNodes)
-		
-	printf("finishq.size()=%d, numNodes=%d\n",(int)finishedq.size(),numNodes);
+
 }//end of main
-
-void handleFinishedPid(pid_t finishedPid){
-	//update numParents for each of the finishedNodeID's children
-	int finishedNodeID=pidToNodeIDMap[finishedPid];
-	Node finishedNode=allNodesMap[finishedNodeID];
-	if(finishedNode.children[0]!=-99){
-		for(int i=0;i<(int)(finishedNode.children).size();i++){
-			int childToUpdate=finishedNode.children[i];
-
-			//update numParents for a given child
-			int remainingParents=numParents[childToUpdate];//key=node, value=number of remaining Parents
-			remainingParents--;
-			numParents[childToUpdate]=remainingParents;
-
-			//update readyq
-			if(remainingParents==0){
-				readyq.push(childToUpdate);
-				cout<<"adding "<<childToUpdate<<" to readyq"<<endl;
-			}
-		}
-	}
-	
-	//update finishq
-	finishedq.push(finishedNodeID);
-	cout<<"adding "<<finishedNodeID<<" to finishedq"<<endl;
-	cout<<"finishedq.size()="<<finishedq.size()<<endl;
-
-	//update allNodesMap
-	Node updateNode=allNodesMap[finishedNodeID];
-	updateNode.status=FINISHED;
-	allNodesMap[finishedNodeID]=updateNode;
-}
 
 void addNodeToNumParents(Node node){
 
@@ -299,11 +250,11 @@ void addNodeToNumParents(Node node){
 		numParents[node.id]=0;
 		//cout<<"adding child: "<<node.id<<" to numParents"<<endl;
 	}
-	
-	//if there no valid children quit function
-	if(node.children[0]==-99) return;  
 
-	//add to numParents if not already in numParents	
+	//if there no valid children quit function
+	if(node.children[0]==-99) return;
+
+	//add to numParents if not already in numParents
 	//increment each node.children[i]'s number of Parents by 1
 	for(int i=0;i<(int)(node.children).size();i++){
 		if(numParents.count(node.children[i])==0){
@@ -314,5 +265,5 @@ void addNodeToNumParents(Node node){
 		tmp++;
 		numParents[node.children[i]]=tmp;
 		//cout<<"numParents["<<node.children[i]<<"] = "<<numParents[node.children[i]]<<" to numParents"<<endl;
-	}		
+	}
 }

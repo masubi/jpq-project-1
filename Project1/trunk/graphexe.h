@@ -1,6 +1,6 @@
 /*
  * graphexe.h
- * 
+ *
  * Contains helper functions and data structures
  *
  */
@@ -40,5 +40,8 @@ Node createNode(string line, int id);
 vector<string> split(string str, string delimiter);
 vector<int> splitToInt(string str, string delimiter);
 void trim(string& str);
+
+//helper functions
+void createOpeningFileErrorMessage(char * errorMsg, char * inputOrOutputFile, Node * runningNode);
 
 #endif

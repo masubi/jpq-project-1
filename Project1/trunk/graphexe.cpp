@@ -44,7 +44,7 @@ Node createNode(string line, int id){
 
         //id
         aNode.id=id;
-        
+
         //prog
         strcpy(aNode.prog, array[0].c_str());
 
@@ -92,7 +92,7 @@ vector<string> split(string str, string delimiter){
     res.push_back(str.substr(beg, end-beg));
     beg=beg+(end-beg)+delimiter.length();//beg= lengthof substring+lengthof delimiter
   }
-  return res;                 
+  return res;
 }
 
 vector<int> splitToInt(string str, string delimiter){
@@ -109,7 +109,7 @@ vector<int> splitToInt(string str, string delimiter){
     res.push_back( atoi((str.substr(beg, end-beg)).c_str()) );
     beg=beg+(end-beg)+delimiter.length();//beg= lengthof substring+lengthof delimiter
   }
-  return res;                 
+  return res;
 }
 
 // helper function to trim extra whitespace from a string
@@ -122,4 +122,12 @@ void trim(string& str)
     if(pos != string::npos) str.erase(0, pos);
   }
   else str.erase(str.begin(), str.end());
+}
+
+void createOpeningFileErrorMessage(char * errorMsg, char * inputOrOutputFile, Node * runningNode) {
+	strcpy(errorMsg, "Error opening ");
+	strcat(errorMsg, inputOrOutputFile);
+	strcat(errorMsg, " file ");
+	strcat(errorMsg, runningNode->input);
+	perror(errorMsg);
 }
