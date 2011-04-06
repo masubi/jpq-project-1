@@ -2,7 +2,29 @@
 * login: masuij(login used to submit)
 * Linux
 * date: 03/28/11
-* name: Justin Masui, full_name2 (for partner(s))
-* emails: masuij@seattleu.edu */
+* name: Justin Masui, Pichai Assawaruangchai, Quy Le
+* emails: veks11@gmail.com,assawaru@seattleu.edu,quyvle@gmail.com */
 
 
+• The purpose of your program
+• How to compile the program
+• How to use the program from the shell (syntax)
+
+
+
+####################################
+• What exactly your program does
+####################################  
+Basic idea is that each node's information is added ot the following maps
+
+name            key     value
+--------------- ---     --------------------
+allNodesMap     id      node
+numParents      id      numParents
+ 
+-  if numParents[id]=0, then the node is added to ready queue. 
+-  when each node completes execution, for each element in allNodesMap[id].children the numParents[child] is decremented 1.  If this value is equal to 0 then move to ready queue.
+-  execute all jobs in ready queue, move running jobs to finishq
+-  repeat until all jobs in finishq
+
+This gives an O(V+E) because populating the numParents is O(V+E).  Otherwise, every other operation is O(V).  This is equivalent complexity to a Topological sort, but unlike topological support it allows for execution parallelism in the process dependencies.
