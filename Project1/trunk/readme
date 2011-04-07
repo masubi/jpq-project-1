@@ -16,20 +16,80 @@ that are eligible to run at that moment in time. As programs in the graph finish
 ####################################
 
 To compile:
-make clean
-make  //note that this creates 
+
+make 
+
+//this will be default run clean.  It also creates blank.txt and blank-file.txt used in testing.  Without creating these files, none of the nodes will return a correct exit status and some outputs may not be correct
 
 To clean:
+
+make clean
+
+//This will remove all *.txt files
+
 
 ####################################
  How to use the program from the shell (syntax)
 ####################################
 
+$ ./graphexec some-graph-file.txt
+
+note: the program assumes that dependent input files already exist.  Otherwise a node will not correctly finish
+
+####################################
+Expected Output
+####################################  
+
+$ ./graphexec ./testFiles/testgraph1.txt
+
+-----------------------
+node numberParents
+0    0
+1    1
+2    1
+3    1
+4    2
+-----------------------
+Total Nodes Read=5
+-----------------------
+Node 0: adding to readyq
+Node 1: adding to ineligibleq
+Node 2: adding to ineligibleq
+Node 3: adding to ineligibleq
+Node 4: adding to ineligibleq
+Node 0: forked as pid 16247
+Node 0: exited, WIFEXITED(status)=0,pid=16247,finished
+Node 0: adding to finishedq
+finishq has 1 nodes
+Node 1: adding to readyq
+Node 1: forked as pid 16248
+Node 1: exited, WIFEXITED(status)=0,pid=16248,finished
+Node 1: adding to finishedq
+finishq has 2 nodes
+Node 2: adding to readyq
+Node 3: adding to readyq
+Node 3: forked as pid 16249
+Node 2: forked as pid 16250
+Node 3: exited, WIFEXITED(status)=0,pid=16249,finished
+Node 2: adding to finishedq
+finishq has 3 nodes
+Node 2: exited, WIFEXITED(status)=0,pid=16250,finished
+Node 3: adding to finishedq
+finishq has 4 nodes
+Node 4: adding to readyq
+Node 4: forked as pid 16251
+Node 4: exited, WIFEXITED(status)=0,pid=16251,finished
+Node 4: adding to finishedq
+finishq has 5 nodes
+---------------------------------------------------
+Number of nodes in finishq(5) = nodes read(5)
+All jobs considered Complete !!!
+---------------------------------------------------
 
 ####################################
  What exactly your program does
 ####################################  
-Basic idea is that each node's information is added ot the following maps
+Basic idea is that each node's information is added to the following maps
 
 name            key     value
 --------------- ---     --------------------
@@ -42,3 +102,6 @@ numParents      id      numParents
 -  repeat until all jobs in finishq
 
 This gives an O(V+E) because populating the numParents is O(V+E).  Otherwise, every other operation is O(V).  This is equivalent complexity to a Topological sort, but unlike topological support it allows for execution parallelism in the process dependencies.
+
+
+
