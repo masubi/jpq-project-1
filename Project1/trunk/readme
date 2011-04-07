@@ -5,15 +5,29 @@
 * name: Justin Masui, Pichai Assawaruangchai, Quy Le
 * emails: veks11@gmail.com,assawaru@seattleu.edu,quyvle@gmail.com */
 
+####################################
+ The purpose of your program
+####################################
+The program graphexec will be responsible for analyzing a graph of user programs, determining which ones are eligible to run, and running programs
+that are eligible to run at that moment in time. As programs in the graph finish, your program will determine which other programs in the graph have become eligible to run, execute those programs, and continue this process until all programs are finished.
 
-• The purpose of your program
-• How to compile the program
-• How to use the program from the shell (syntax)
+####################################
+ How to compile the program
+####################################
 
+To compile:
+make clean
+make  //note that this creates 
+
+To clean:
+
+####################################
+ How to use the program from the shell (syntax)
+####################################
 
 
 ####################################
-• What exactly your program does
+ What exactly your program does
 ####################################  
 Basic idea is that each node's information is added ot the following maps
 
