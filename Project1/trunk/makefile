@@ -8,7 +8,7 @@ default: clean graphexe
 
 graphexe : main.cpp graphexe.cpp graphexe.h 
 	$(CC) $(LFLAGS) graphexe.cpp main.cpp -o graphexe
-	chmod 700 graphexe
+	chmod 700 graphexe && touch ./blank-file.txt && touch ./blank.txt
 
 clean:
 	rm -f graphexe
