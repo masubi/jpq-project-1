@@ -9,10 +9,7 @@ LFLAG=-Wall $(DEBUG) -lpthread
 $(EXE): clean $(OBJS) 
 	$(CC) -o $@ $(OBJS) $(LFLAG)
 	chmod 744 $(EXE)
-	$(EXE) 5 8 4
-
-#$(OBJS):
-#	$(CC) $(CFLAG) $(OBJS:.o=.cpp)
+	./$(EXE) 5 8 4
 
 test:
 	$(CC) -o $@ test.cpp $(LFLAG)

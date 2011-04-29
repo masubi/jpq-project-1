@@ -159,7 +159,7 @@ void *BabyEagleThredFn(void *arg)
 			if(pthread_mutex_trylock(&shared.m_Wakeupmom) == 0)
 			{
 				pthread_mutex_lock(&shared.m_Print);
-				for(int i = 0; i <= index; i++)
+				for(i = 0; i <= index; i++)
 				{
 					cout << " ";
 				}
@@ -181,7 +181,7 @@ void *BabyEagleThredFn(void *arg)
 		pthread_sleep(1);
 		
 		pthread_mutex_lock(&shared.m_Print);
-		for(int i = 0; i <= index; i++)
+		for(i = 0; i <= index; i++)
 		{
 			cout << " ";
 		}
@@ -197,7 +197,7 @@ void *BabyEagleThredFn(void *arg)
 		{
 			shared.pot[shared.out] = false;
 			pthread_mutex_lock(&shared.m_Print);
-			for(int i = 0; i <= index; i++)
+			for(i = 0; i <= index; i++)
 			{
 				cout << " ";
 			}
@@ -216,7 +216,7 @@ void *BabyEagleThredFn(void *arg)
 			pthread_mutex_unlock(&shared.m_EatCount);
 			
 			pthread_mutex_lock(&shared.m_Print);
-			for(int i = 0; i <= index; i++)
+			for(i = 0; i <= index; i++)
 			{
 				cout << " ";
 			}
