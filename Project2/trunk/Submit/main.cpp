@@ -118,7 +118,7 @@ void *MotherEagleThreadFn(void *arg)
 			pthread_mutex_lock(&shared.m_Print);
 			
 			//Mom allow baby eagles to eat.
-			cout << "Mother eagle says \"Feeding (" << count << ").\"" << endl;
+			cout << "Mother eagle says \"Feeding (" << count << ")\"" << endl;
 			pthread_mutex_unlock(&shared.m_Print);
 			pthread_mutex_unlock(&shared.m_Pot);
 
