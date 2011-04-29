@@ -1,0 +1,24 @@
+/* CPSC545  Spring2011 Project 2 
+* login: assawaru(login used to submit)
+* Linux
+* date: 04/27/11
+* name: Pichai Assawaruangchai, Quy Le
+* emails: assawaru@seattleu.edu, quyvle@gmail.com */
+
+PURPOSE OF THE PROGRAM:
+The purpose of the program is to simulate a scenerio where
+baby eagles are eating from pots that are refilled by a
+mother eagle.  
+
+HOW TO COMPILE THE PROGRAM:
+Type "make" into the command line console.  The make file 
+will compile the program and run the executable.
+
+HOW TO USE THE PROGRAM FROM THE SHELL:
+Type the following into the console:
+	"eaglefeed <number of pots> <number of babies> <number of feedings>"
+
+WHAT EXACTLY THE PROGRAM DOES:
+The program uses semaphores and mutex locks to maximize concurrency between 
+hungry baby eagles feeding on the food in the pots and the mother filling
+those pots.  There's also a lock to control printing to the output console.
